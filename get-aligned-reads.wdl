@@ -25,11 +25,18 @@ import "tasks/cutadapt.wdl" as cutadapt
 import "tasks/samtools.wdl" as samtools
 import "tasks/picard.wdl" as picard
 
-workflow getAlignedReads {
+workflow getAlignedReadsBowtie {
     input {
         File read1
         File? read2
-        Array[File]+ bowtieIndex
+        Array[File]+ bowtieIndex = [
+            "reference/bowtie/reference.1.ebwt",
+            "reference/bowtie/reference.2.ebwt",
+            "reference/bowtie/reference.3.ebwt",
+            "reference/bowtie/reference.4.ebwt",
+            "reference/bowtie/reference.rev.1.ebwt",
+            "reference/bowtie/reference.rev.2.ebwt"
+        ]
         Array[String]+ adapter = ["AGATCGGAAGAG"]  # Illumina Universal Adapter
         Array[String]+? adapterRead2
     }
