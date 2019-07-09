@@ -60,13 +60,13 @@ workflow getAlignedReadsBowtie {
     call samtools.View as samtoolsView {
         input:
             inFile = Bowtie.outputBam,
-            outputBam = false,
             includeFilter = 2,  # Select all properly mapped reads
     }
 
     call picard.SamToFastq {
         input:
-            inputBam = samtoolsView.outputFile,
+            inputBam = samtoolsView.outputBam,
+            inputBamIndex = samtoolsView.outputBamIndex,
             paired = defined(read2)
     }
 
@@ -99,15 +99,15 @@ task SelectReads {
     }
 
     command <<<
-        python3 ~{mapped} ~{original} ~{outputPath} \
+        python3 \
         <<CODE
         import sys
         import dnaio
 
-        with dnaio.FastqReader(sys.argv[1]) as mapped_reads:
+        with dnaio.FastqReader("~{mapped}") as mapped_reads:
             mapped_ids = {sequence.name for sequence in mapped_reads}
-        with dnaio.FastqReader(sys.argv[2]) as original_reads:
-            with dnaio.FastqWriter(sys.argv[3], "w") as output_file:
+        with dnaio.FastqReader("~{original}") as original_reads:
+            with dnaio.FastqWriter("~{outputPath}", "w") as output_file:
                 for sequence in original_reads:
                     if sequence.name.split()[0] in mapped_ids:
                         output_file.write(sequence)
